@@ -12,6 +12,7 @@ import sqlite3
 import os
 from datetime import datetime
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 
 DB_PATH = os.environ.get("BUDGET_DB", os.path.join(os.path.dirname(os.path.abspath(__file__)), "budget.db"))
 HOST = os.environ.get("HOST", "0.0.0.0")
@@ -54,10 +55,10 @@ def _uid(user_id: str | None) -> str:
 
 
 # ---------- 도구(tool): AI가 호출 ----------
-@mcp.tool()
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 지출 기록", readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False))
 def record_expense(amount: int, category: str = "기타지출", memo: str = "",
                    date: str = "", fixed: bool = False, user_id: str = "") -> str:
-    """지출을 기록한다. 사용자가 '점심 8천원 썼어', '쇼핑 3만원' 처럼 돈을 쓴 것을 말하면 호출.
+    """[100억 가계부] 지출을 기록한다. 사용자가 '점심 8천원 썼어', '쇼핑 3만원' 처럼 돈을 쓴 것을 말하면 호출.
     amount: 금액(원), category: 분류(식비/교통/쇼핑/경조사 등), fixed: 매달 나가는 고정비면 True."""
     u = _uid(user_id)
     ymd = date or datetime.now().strftime("%Y-%m-%d")
@@ -67,10 +68,10 @@ def record_expense(amount: int, category: str = "기타지출", memo: str = "",
     return f"✅ 지출 기록: {category} {won(int(amount))} ({ymd}). 100억까지 화이팅이에요! 💪"
 
 
-@mcp.tool()
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 수입 기록", readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False))
 def record_income(amount: int, category: str = "기타수입", memo: str = "",
                   date: str = "", user_id: str = "") -> str:
-    """수입을 기록한다. 사용자가 '월급 300만원 들어왔어', '용돈 5만원' 처럼 돈이 생긴 것을 말하면 호출."""
+    """[100억 가계부] 수입을 기록한다. 사용자가 '월급 300만원 들어왔어', '용돈 5만원' 처럼 돈이 생긴 것을 말하면 호출."""
     u = _uid(user_id)
     ymd = date or datetime.now().strftime("%Y-%m-%d")
     with db() as conn:
@@ -79,9 +80,9 @@ def record_income(amount: int, category: str = "기타수입", memo: str = "",
     return f"💰 수입 기록: {category} {won(int(amount))} ({ymd}). 100억 모으기 한 걸음 더!"
 
 
-@mcp.tool()
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 월 요약", readOnlyHint=True, openWorldHint=False))
 def get_summary(month: str = "", user_id: str = "") -> str:
-    """특정 월의 수입·지출·잔액 요약. 사용자가 '이번 달 얼마 썼어?', '잔액 알려줘'라고 하면 호출.
+    """[100억 가계부] 특정 월의 수입·지출·잔액 요약. 사용자가 '이번 달 얼마 썼어?', '잔액 알려줘'라고 하면 호출.
     month: 'YYYY-MM' (비우면 이번 달)."""
     u = _uid(user_id)
     ym = month or datetime.now().strftime("%Y-%m")
@@ -95,9 +96,9 @@ def get_summary(month: str = "", user_id: str = "") -> str:
             f"- 수입: {won(inc)}\n- 지출: {won(exp)}\n- 잔액: {won(bal)}")
 
 
-@mcp.tool()
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 지출 분석", readOnlyHint=True, openWorldHint=False))
 def analyze_spending(month: str = "", user_id: str = "") -> str:
-    """카테고리별 지출 분석 + 고정비/변동비. 사용자가 '어디에 많이 썼어?', '지출 분석해줘'라고 하면 호출."""
+    """[100억 가계부] 카테고리별 지출 분석 + 고정비/변동비. 사용자가 '어디에 많이 썼어?', '지출 분석해줘'라고 하면 호출."""
     u = _uid(user_id)
     ym = month or datetime.now().strftime("%Y-%m")
     with db() as conn:
@@ -120,9 +121,9 @@ def analyze_spending(month: str = "", user_id: str = "") -> str:
     return "\n".join(lines)
 
 
-@mcp.tool()
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 예산 설정", readOnlyHint=False, destructiveHint=False, idempotentHint=True, openWorldHint=False))
 def set_budget(category: str, limit: int, user_id: str = "") -> str:
-    """카테고리 월 예산 한도를 설정한다. 사용자가 '식비 예산 40만원으로 정해줘'라고 하면 호출."""
+    """[100억 가계부] 카테고리 월 예산 한도를 설정한다. 사용자가 '식비 예산 40만원으로 정해줘'라고 하면 호출."""
     u = _uid(user_id)
     with db() as conn:
         conn.execute("INSERT OR REPLACE INTO budget(user,category,limit_amt) VALUES(?,?,?)",
@@ -130,9 +131,9 @@ def set_budget(category: str, limit: int, user_id: str = "") -> str:
     return f"🎯 예산 설정: {category} 월 {won(int(limit))}"
 
 
-@mcp.tool()
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 예산 현황", readOnlyHint=True, openWorldHint=False))
 def check_budget(month: str = "", user_id: str = "") -> str:
-    """예산 대비 지출 현황과 초과 경고. 사용자가 '예산 얼마나 남았어?', '식비 넘었어?'라고 하면 호출."""
+    """[100억 가계부] 예산 대비 지출 현황과 초과 경고. 사용자가 '예산 얼마나 남았어?', '식비 넘었어?'라고 하면 호출."""
     u = _uid(user_id)
     ym = month or datetime.now().strftime("%Y-%m")
     with db() as conn:
@@ -150,9 +151,9 @@ def check_budget(month: str = "", user_id: str = "") -> str:
     return "\n".join(out)
 
 
-@mcp.tool()
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 목표 진행률", readOnlyHint=True, openWorldHint=False))
 def goal_progress(user_id: str = "") -> str:
-    """목표 100억까지의 진행률을 응원과 함께 알려준다. 사용자가 '100억까지 얼마 남았어?'라고 하면 호출.
+    """[100억 가계부] 목표 100억까지의 진행률을 응원과 함께 알려준다. 사용자가 '100억까지 얼마 남았어?'라고 하면 호출.
     (현재 순자산 = 전체 수입 - 전체 지출 기준)"""
     u = _uid(user_id)
     with db() as conn:
@@ -167,9 +168,9 @@ def goal_progress(user_id: str = "") -> str:
             f"여러분, 100억 부자되세요! — MC2호선 응원 중 💛")
 
 
-@mcp.tool()
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 내역 조회", readOnlyHint=True, openWorldHint=False))
 def list_transactions(month: str = "", category: str = "", user_id: str = "") -> str:
-    """최근 거래 내역을 조회한다. 사용자가 '이번 달 경조사 내역 보여줘'처럼 특정 분류/기간을 물으면 호출."""
+    """[100억 가계부] 최근 거래 내역을 조회한다. 사용자가 '이번 달 경조사 내역 보여줘'처럼 특정 분류/기간을 물으면 호출."""
     u = _uid(user_id)
     ym = month or datetime.now().strftime("%Y-%m")
     q = "SELECT ymd, kind, category, amount, memo FROM tx WHERE user=? AND ymd LIKE ?"
