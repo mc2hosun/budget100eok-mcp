@@ -80,7 +80,7 @@ def record_income(amount: int, category: str = "기타수입", memo: str = "",
     return f"💰 수입 기록: {category} {won(int(amount))} ({ymd}). 100억 모으기 한 걸음 더!"
 
 
-@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 월 요약", readOnlyHint=True, openWorldHint=False))
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 월 요약", readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False))
 def get_summary(month: str = "", user_id: str = "") -> str:
     """[100억 가계부] 특정 월의 수입·지출·잔액 요약. 사용자가 '이번 달 얼마 썼어?', '잔액 알려줘'라고 하면 호출.
     month: 'YYYY-MM' (비우면 이번 달)."""
@@ -96,7 +96,7 @@ def get_summary(month: str = "", user_id: str = "") -> str:
             f"- 수입: {won(inc)}\n- 지출: {won(exp)}\n- 잔액: {won(bal)}")
 
 
-@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 지출 분석", readOnlyHint=True, openWorldHint=False))
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 지출 분석", readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False))
 def analyze_spending(month: str = "", user_id: str = "") -> str:
     """[100억 가계부] 카테고리별 지출 분석 + 고정비/변동비. 사용자가 '어디에 많이 썼어?', '지출 분석해줘'라고 하면 호출."""
     u = _uid(user_id)
@@ -131,7 +131,7 @@ def set_budget(category: str, limit: int, user_id: str = "") -> str:
     return f"🎯 예산 설정: {category} 월 {won(int(limit))}"
 
 
-@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 예산 현황", readOnlyHint=True, openWorldHint=False))
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 예산 현황", readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False))
 def check_budget(month: str = "", user_id: str = "") -> str:
     """[100억 가계부] 예산 대비 지출 현황과 초과 경고. 사용자가 '예산 얼마나 남았어?', '식비 넘었어?'라고 하면 호출."""
     u = _uid(user_id)
@@ -151,7 +151,7 @@ def check_budget(month: str = "", user_id: str = "") -> str:
     return "\n".join(out)
 
 
-@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 목표 진행률", readOnlyHint=True, openWorldHint=False))
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 목표 진행률", readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False))
 def goal_progress(user_id: str = "") -> str:
     """[100억 가계부] 목표 100억까지의 진행률을 응원과 함께 알려준다. 사용자가 '100억까지 얼마 남았어?'라고 하면 호출.
     (현재 순자산 = 전체 수입 - 전체 지출 기준)"""
@@ -168,7 +168,7 @@ def goal_progress(user_id: str = "") -> str:
             f"여러분, 100억 부자되세요! — MC2호선 응원 중 💛")
 
 
-@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 내역 조회", readOnlyHint=True, openWorldHint=False))
+@mcp.tool(annotations=ToolAnnotations(title="100억 가계부 - 내역 조회", readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False))
 def list_transactions(month: str = "", category: str = "", user_id: str = "") -> str:
     """[100억 가계부] 최근 거래 내역을 조회한다. 사용자가 '이번 달 경조사 내역 보여줘'처럼 특정 분류/기간을 물으면 호출."""
     u = _uid(user_id)
